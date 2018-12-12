@@ -23,9 +23,9 @@
     "minimum_chrome_version": "20",
     "name": "SG's Better PvP Pardus Extension, TE",
     "permissions": [ "storage" ],
-    "short_name": "SGPvPt",
+    "short_name": "SGPvPte",
     "web_accessible_resources": [
         "ui.html", "ui.css", "default-keymap.json"
     ],
-    "version": "43.3"
+    "version": "43.4"
 }

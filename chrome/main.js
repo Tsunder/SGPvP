@@ -1279,8 +1279,6 @@ SGMain.prototype.passOrbiter = function() {
             var best = this.chooseTarget(targets.included, ship_pri);
             this.postRequest( "/overview_ship.php", "player=" + best.id + "&transferorb=Send Orbiter",
                               callback.bind(this) );
-            // Next pass we'll nav instead. Can't nav now because that'd
-            // break the rule of one server request per user action.
             this.passOrbiter = this.nav;
         }
         else
@@ -1292,7 +1290,6 @@ SGMain.prototype.passOrbiter = function() {
         if( m )
             this.postRequest( "/overview_ship.php", "player=" + m[1] + "&transferorb=Send Orbiter",
                               callback.bind(this) );
-        // XXX should we disable pass here? Nav? Reload the combat page?
         break;
 
     default:
