@@ -811,12 +811,18 @@ SGMain.prototype.switchCombatMode = function(newCombatMode) {
             this.showNotification("Can't switch combat mode", 1000);
         else {
             // now check what the response from the server was
-            if (responseText.indexOf("<font color='red'>OFFENSIVE</font>") > -1)
+            if (responseText.indexOf("<font color='red'>OFFENSIVE</font>") > -1) {
                 this.showNotification("OFFENSIVE COMBAT", 1000);
-            else if (responseText.indexOf("<font color='gray'>BALANCED</font>") > -1)
+                //this.storage.set( { combatmode : "offensive" } )
+            }
+            else if (responseText.indexOf("<font color='gray'>BALANCED</font>") > -1) {
                 this.showNotification("Balanced combat", 1000);
-            else if (responseText.indexOf("<font color='green'>DEFENSIVE</font>") > -1)
+                //this.storage.set( { combatmode : "balanced" } )
+            }
+            else if (responseText.indexOf("<font color='green'>DEFENSIVE</font>") > -1) {
                 this.showNotification("Defensive combat", 1000);
+                //this.storage.set( { combatmode : "defensive" } )
+            }
         }
     }
 };
@@ -1156,14 +1162,25 @@ SGMain.prototype.ambush = function() {
     apply.click();
 };
 
+//need a good way to track if the player is on OC/DC/BAL
 SGMain.prototype.switchToDC = function() {
-  this.switchCombatMode("defensive");
+    this.switchCombatMode("defensive");
+    /*if (this.storage.combatmode.localeCompare("defensive") != 0 ) {
+        this.switchCombatMode("defensive");
+    }*/
+
 };
 SGMain.prototype.switchToBalanced = function() {
-  this.switchCombatMode("balanced");
+    this.switchCombatMode("balanced");
+    /*if (this.storage.combatmode.localeCompare("balanced") != 0 ) {
+        this.switchCombatMode("balanced");
+    }*/
 };
 SGMain.prototype.switchToOC = function() {
-  this.switchCombatMode("offensive");
+    this.switchCombatMode("offensive");
+    /*if (this.storage.combatmode.localeCompare("offensive") != 0 ) {
+        this.switchCombatMode("offensive");
+    }*/
 };
 
 SGMain.prototype.activateAB = function() {
@@ -1533,4 +1550,80 @@ SGMain.prototype.clearWaypoints = function() {
     //console.log(wayp.len)
     //console.log(wayp.currentIndex)
     //console.log(wayp.direction)
+}
+
+SGMain.prototype.toggleMissileOnAttacked = function() {
+    doc = this.doc;
+    var iframe = doc.getElementById("missilesToggleFrame")
+    if ( iframe ) { // frame exists.
+        iframe = iframe.contentWindow.document || iframe.contentDocument //redefining into a usable manner
+        // toggling the checkbox.
+        if (iframe.getElementById("usemissiles")) {
+            iframe.getElementById("usemissiles").checked = !(iframe.getElementById("usemissiles").checked)
+        }
+        //sends the updated form
+        iframe.getElementsByName("pilotoptions")[0].form.submit() // ??? submits but doesn't update??
+        
+    }
+    else { //frame doesn't exist, make
+        iframe = doc.createElement('iframe');
+        iframe.id = "missilesToggleFrame";
+        iframe.src = 'overview_ship.php';
+        iframe.hidden = "hidden";
+        doc.querySelectorAll('*')[1].after(iframe);
+        console.log("no frame, making.")
+    }
+}
+
+// attempts to fill the best ship with a quantity of some goods from the player's cargo
+// default would be: up to 150 biowaste, up to 150 energy, up to 150 animal embryos, and up to 150 fuel (maybe less up to 5 tons of fuel?)
+SGMain.prototype.telefill = function() {
+    doc = this.doc;
+    var ships = this.getShips();
+    if(!ships)
+        return;
+
+    var targets = this.scanForTargets( this.storage.targeting, ships );
+    if(targets.included.length > 0) {
+        var ship_pri = (this.page == 'main') ?
+            this.getShipModelPriorities() : null;
+        var best = this.chooseTarget(targets.included, ship_pri);
+
+        var form = document.createElement("form");
+
+
+//build custom request, doens't seem to work?
+        this.postRequest( "ship2ship_transfer.php",  + "&credits=1&transfer=to_other_ship" + "&playerid=" + best.id,
+                          callback.bind(this) );
+        // Next telefill we'll nav instead. Can't nav now because that'd
+        // break the rule of one server request per user action.
+        this.telefill = this.nav;
+    }
+
+    function callback( status, responseText ) {
+        if (status != 200)
+            this.showNotification("TELEFILL ERROR", 1000);
+        else
+            this.showNotification("Telefill attempt!", 1000);
+    }
+}
+
+// returns the quantity of a given resource id resid, if it exists.
+SGMain.prototype.getCargoQuantity = function(resid) {
+    elt = this.doc.getElementById('tdCargoRes' + resid);
+    if(elt) {
+        m = elt.textContent.match(/(\d+)/);
+        if(m)
+            return parseInt(m[1]);
+    }
+    return NaN
+}
+
+// tries to get an list of the players cargo
+SGMain.prototype.getCargo = function() {
+    var cargo = []
+    for (var i = 0; i < 56; i++) {
+        cargo.push(this.getCargoQuantity(i))
+    }
+    return cargo
 }
