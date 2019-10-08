@@ -226,12 +226,12 @@ SGMain.prototype.scanForTargets = function(targeting_data, ships) {
 
         if(exclude.ids[ship.id] || exclude.names[name])
             exc.push(ship);
-        else if((n = include.names.indexOf(name) > -1) {
+        else if((n = include.names.indexOf(name)) > -1) {
             //todo make priority into index of ID/name on list.
             ship.includePriority = n;
             inc.push(ship);
         }
-        else if((n = include.ids.indexOf(ship.id]) > -1) {
+        else if((n = include.ids.indexOf(ship.id)) > -1) {
             ship.includePriority = n + include.names.length;
             inc.push(ship);
         }
