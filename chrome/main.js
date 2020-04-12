@@ -227,7 +227,6 @@ SGMain.prototype.scanForTargets = function(targeting_data, ships) {
         if(exclude.ids[ship.id] || exclude.names[name])
             exc.push(ship);
         else if((n = include.names.indexOf(name)) > -1) {
-            //todo make priority into index of ID/name on list.
             ship.includePriority = n;
             inc.push(ship);
         }
@@ -1486,37 +1485,47 @@ SGMain.prototype.travel = function() {
                         doc, null, XPathResult.ANY_UNORDERED_NODE_TYPE,
                         null ).singleNodeValue;
     //calculating next waypoint
+    //if the user is at where they should be (on the list of way points)
     if (this.userloc == storage.wayp.tid[storage.wayp.currentIndex]) {
         if ( storage.wayp.len > 1) {
-            if ( (storage.wayp.currentIndex + storage.wayp.direction == storage.wayp.len) || (storage.wayp.currentIndex + storage.wayp.direction < 0) ) {
+            //reversing waypoint direction if at the end.
+            if ( (storage.wayp.currentIndex + storage.wayp.direction == storage.wayp.len) ||
+                (storage.wayp.currentIndex + storage.wayp.direction < 0) ) {
                 storage.wayp.direction *= -1;
             }
+            //set destination to the next point
             storage.wayp.currentIndex += storage.wayp.direction;
-        } 
+        }
         else if (!elt) {
-            this.showNotification( 'Arrived at waypoint.', 750 );
+            this.showNotification( 'Arrived at waypoint.', 750 ); //could be obnoxious
             this.nav()
             return;
         }
         this.storage.set( { wayp : storage.wayp } );
     }    
-        if( elt && elt.click &&
+    if ( elt && elt.click &&
         !( elt.disabled || elt.classList.contains('disabled') ) ) {
-        //reversing waypoint direction.
 
         elt.click(); // this reloads the page
         return;
     }
 
-    // no retreat button...
+    // no retreat button... continue
 
+    //no waypoints set, show message and nav
     if( storage.wayp.len == 0 ) {
         this.showNotification( 'No waypoints set!', 750 );
-        this.nav(); // this reloads the page
+        this.nav();
         return;
     }
 
-    
+    //check to see if target tile is in different sector, then try to wormhole jump
+    //fuck it, check to see if target tile is in view, if it's not, try to wormhole jump
+    //fuck it, if there's a wormhole, do a jump?
+    //
+    if () {
+
+    }
 
     form = doc.getElementById( 'navForm' );
     if ( form ) {
